@@ -39,7 +39,7 @@ public class TransparentProxyHandler implements Handler
   @Override
   public boolean respond(Request request) throws IOException
   {
-    if (!request.url.contains("://"))
+    if (!request.url.startsWith("http://"))
     {
       request.url = "http://" + request.headers.get("host") + request.url;
     }
