@@ -68,6 +68,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -258,7 +259,13 @@ public class AdblockPlus extends Application
       try
       {
         parser = factory.newSAXParser();
-        parser.parse(getAssets().open("subscriptions.xml"), new SubscriptionParser(subscriptions));
+
+        File ss = new File(Environment.getExternalStorageDirectory().getPath(), "/AdblockPlus/subscriptions.xml");
+        if(ss.exists())
+        	parser.parse(ss, new SubscriptionParser(subscriptions));
+        else
+        	parser.parse(getAssets().open("subscriptions.xml"), new SubscriptionParser(subscriptions));
+
       }
       catch (ParserConfigurationException e)
       {
@@ -652,7 +659,7 @@ public class AdblockPlus extends Application
       updateTime.set(Calendar.MINUTE, 0);
       // ...next day
       updateTime.add(Calendar.HOUR_OF_DAY, 24);
-      // Spread out the “mass downloading” for 6 hours
+      // Spread out the "mass downloading" for 6 hours
       updateTime.add(Calendar.MINUTE, (int) (Math.random() * 60 * 6));
     }
     else
