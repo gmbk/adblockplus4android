@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="refresh_names">
+        <item>手動</item>
+        <item>開始時</item>
+        <item>定期的</item>
+    </string-array>
+</resources>
