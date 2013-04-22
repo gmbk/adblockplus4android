@@ -1,6 +1,24 @@
 <?xml version="1.0"?>
 
 <subscriptions>
+      <subscription title="gmbk'sスマホ用フィルタ"
+                specialization="Japanese"
+                url="http://gmbk0.web.fc2.com/ab/abplist.txt"
+                homepage="http://gmbk0.tumblr.com/"
+                prefixes="jp"
+                author="gmbk"/>
+  <subscription title="ABP Japanese filters"
+                specialization="Japanese"
+                url="https://adblock-plus-japanese-filter.googlecode.com/hg/abp_jp.txt"
+                homepage="http://code.google.com/p/adblock-plus-japanese-filter/"
+                prefixes="jp"
+                author="k2japan"/>
+  <subscription title="日本向けフィルタ(仮)"
+                specialization="Japanese"
+                url="http://tofukko.r.ribbon.to/Adblock_Plus_list.txt"
+                homepage="http://tofukko.r.ribbon.to/abp.html"
+                prefixes="jp"
+                author="豆腐"/>
   <subscription title="EasyList"
                 specialization="English"
                 url="https://easylist-downloads.adblockplus.org/easylist.txt"
