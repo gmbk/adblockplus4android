@@ -3,7 +3,7 @@
 <subscriptions>
       <subscription title="gmbk'sスマホ用フィルタ"
                 specialization="Japanese"
-                url="http://gmbk0.web.fc2.com/ab/abplist.txt"
+                url="https://gmbksfilters.googlecode.com/hg/abplist_adonly.txt"
                 homepage="http://gmbk0.tumblr.com/"
                 prefixes="jp"
                 author="gmbk"/>
