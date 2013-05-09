@@ -245,6 +245,43 @@ public class AdblockPlus extends Application
     return res == PackageManager.PERMISSION_GRANTED;
   }
 
+  
+  
+  public void clearSubscriptions(){
+	  subscriptions = null;
+  }
+  
+  private long xmlLastModified = 0;
+  
+  public boolean subscriptionsXmlModified(){
+	File subscriptionsFile;
+	boolean reload = false;
+	try
+	{
+		long lastModified = 0;
+		subscriptionsFile= new File(Environment.getExternalStorageDirectory().getPath(), "/AdblockPlus/subscriptions.xml");
+		if(subscriptionsFile.exists())
+		{
+			lastModified = subscriptionsFile.lastModified();
+		}
+		else
+		{
+			subscriptionsFile = null;
+		}
+		if(lastModified != xmlLastModified){
+			// xml has modified!
+			xmlLastModified = subscriptionsFile.lastModified();
+			reload = true;
+		}
+	}
+	catch(Exception e)
+	{
+		subscriptionsFile = null;
+		Log.e(TAG, e.getMessage(), e);
+	}
+	return reload;
+  }
+  
   /**
    * Returns list of known subscriptions.
    */
@@ -259,10 +296,10 @@ public class AdblockPlus extends Application
       try
       {
         parser = factory.newSAXParser();
+		File subscriptionsFile = new File(Environment.getExternalStorageDirectory().getPath(), "/AdblockPlus/subscriptions.xml");
 
-        File ss = new File(Environment.getExternalStorageDirectory().getPath(), "/AdblockPlus/subscriptions.xml");
-        if(ss.exists())
-        	parser.parse(ss, new SubscriptionParser(subscriptions));
+         if(subscriptionsFile.exists())
+        	parser.parse(subscriptionsFile, new SubscriptionParser(subscriptions));
         else
         	parser.parse(getAssets().open("subscriptions.xml"), new SubscriptionParser(subscriptions));
 

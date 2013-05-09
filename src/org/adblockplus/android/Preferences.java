@@ -100,11 +100,24 @@ public class Preferences extends SummarizedPreferences
     {
       copyAssets();
     }
-
-    AdblockPlus application = AdblockPlus.getApplication();
-
+    
     // Initialize subscription list
     subscriptionList = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription));
+    subscriptionList.setOnClickListener(
+      new View.OnClickListener(){
+    	  public void onClick(View v){
+    		  AdblockPlus application = AdblockPlus.getApplication();
+    		  if(application.subscriptionsXmlModified()){
+    			  application.clearSubscriptions();
+    			  setSubscriptionList();
+    		  }
+    	  }
+      });
+    setSubscriptionList();
+  }
+  
+  private void setSubscriptionList(){
+    AdblockPlus application = AdblockPlus.getApplication();
     List<Subscription> subscriptions = application.getSubscriptions();
     String[] entries = new String[subscriptions.size()];
     String[] entryValues = new String[subscriptions.size()];

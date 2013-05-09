@@ -32,6 +32,8 @@ import android.widget.LinearLayout;
 public class RefreshableListPreference extends ListPreference
 {
   private OnClickListener refreshClickListener;
+  
+  private OnClickListener preferenceClickListener;
 
   public RefreshableListPreference(Context context, AttributeSet attrs)
   {
@@ -70,5 +72,17 @@ public class RefreshableListPreference extends ListPreference
   public void setOnRefreshClickListener(OnClickListener l)
   {
     refreshClickListener = l;
+  }
+  
+  @Override
+  protected void onClick()
+  {
+	  preferenceClickListener.onClick(null);
+	  super.onClick();
+  }
+  public void setOnClickListener(OnClickListener onClickListener)
+  {
+	  if(preferenceClickListener == null)
+			  preferenceClickListener = onClickListener;
   }
 }
