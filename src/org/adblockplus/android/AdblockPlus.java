@@ -270,7 +270,7 @@ public class AdblockPlus extends Application
 		}
 		if(lastModified != xmlLastModified){
 			// xml has modified!
-			xmlLastModified = subscriptionsFile.lastModified();
+			xmlLastModified = lastModified;
 			reload = true;
 		}
 	}
