@@ -29,7 +29,8 @@ local.properties
 .buildpath
 
 gen/
-
+lint.xml
+hs_err_pid*.log
 
 #################
 ## Visual Studio

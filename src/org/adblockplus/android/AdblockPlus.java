@@ -247,7 +247,7 @@ public class AdblockPlus extends Application
 
   
   
-  public void clearSubscriptions(){
+  public void clearSubscriptionList(){
 	  subscriptions = null;
   }
   
@@ -362,7 +362,7 @@ public class AdblockPlus extends Application
           @Override
           public void run()
           {
-            js.evaluate("clearSubscriptions()");
+           // js.evaluate("clearSubscriptions()");
             js.evaluate("addSubscription(\"" + StringEscapeUtils.escapeJavaScript(jsonSub.toString()) + "\")");
           }
         });
@@ -375,21 +375,48 @@ public class AdblockPlus extends Application
     }
   }
 
+
   /**
    * Forces subscriptions refresh.
    */
-  public void refreshSubscription()
+
+  public void refreshSubscriptionAll()
   {
     js.execute(new Runnable()
     {
       @Override
       public void run()
       {
-        js.evaluate("refreshSubscriptions()");
+        js.evaluate("refreshSubscriptionsAll()");
       }
     });
   }
 
+  public void refreshSubscription(final String url)
+  {
+    js.execute(new Runnable()
+    {
+      @Override
+      public void run()
+      {
+        js.evaluate("refreshSubscriptions(\"" + url + "\")");
+      }
+    });
+  }
+  
+  public void clearSubscriptionsExcept(final String urlTsv)
+  {
+	  js.execute(new Runnable()
+	  {
+		  @Override
+		  public void run()
+		  {
+			  js.evaluate("clearSubscriptionsExcept(\"" + urlTsv + "\")");
+		  }
+	  });
+  }
+  
+  
   /**
    * Selects which subscription to offer for the first time.
    * 
@@ -646,7 +673,7 @@ public class AdblockPlus extends Application
       // Refresh if user selected refresh on each start
       if (refresh == 1 && (!wifionly || isWiFiConnected(this)))
       {
-        refreshSubscription();
+        refreshSubscriptionAll();
       }
     }
   }
@@ -909,10 +936,13 @@ public class AdblockPlus extends Application
     }
 
     // JS helper
+    // called from function updateSubscriptionStatus(subscription)
+    //   in file assets/js/start.js
     @SuppressWarnings("unused")
     public void setStatus(String text, long time)
     {
-      sendBroadcast(new Intent(BROADCAST_SUBSCRIPTION_STATUS).putExtra("text", text).putExtra("time", time));
+      String[] spl = text.split("\t");
+      sendBroadcast(new Intent(BROADCAST_SUBSCRIPTION_STATUS).putExtra("text", spl[0]).putExtra("time", time).putExtra("url", spl[1]));
     }
 
     // JS helper

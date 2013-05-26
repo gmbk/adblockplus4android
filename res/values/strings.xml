@@ -85,4 +85,9 @@
   <string name="pref_configuration_title">Show configuration</string>
   <string name="menu_advanced">Advanced settings</string>
 
+  <string name="pref_subscription_unused_title">(Unused)</string>
+  <string name="pref_subscription_one_title">Filter subscription 1</string>
+  <string name="pref_subscription_two_title">Filter subscription 2</string>
+  <string name="pref_subscription_three_title">Filter subscription 3</string>
+  <string name="pref_subscription_four_title">Filter subscription 4</string>
 </resources>

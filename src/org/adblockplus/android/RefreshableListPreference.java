@@ -77,7 +77,8 @@ public class RefreshableListPreference extends ListPreference
   @Override
   protected void onClick()
   {
-	  preferenceClickListener.onClick(null);
+	  if(preferenceClickListener != null)
+		  preferenceClickListener.onClick(null);
 	  super.onClick();
   }
   public void setOnClickListener(OnClickListener onClickListener)

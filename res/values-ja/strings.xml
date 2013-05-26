@@ -55,14 +55,14 @@
     <string name="pref_startatboot_title">ブート時に開始</string>
     <string name="pref_startatboot_summary_on">Adblock Plusは自動的に開始されます</string>
     <string name="pref_startatboot_summary_off">Adblock Plusは手動で開始する必要があります</string>
-    <string name="pref_subscription_title">フィルター購読</string>
-    <string name="pref_refresh_title">フィルター更新</string>
+    <string name="pref_refresh_title">購読更新</string>
     <string name="pref_wifirefresh_title">WiFi接続時のみ更新</string>
     <string name="pref_wifirefresh_summary_on">WiFi接続時のみ自動更新を行います</string>
     <string name="pref_wifirefresh_summary_off">自動更新は無効になります</string>
     <string name="pref_hideicon_title">アイコンを隠す</string>
     <string name="pref_hideicon_summary_on">透明アイコンを使用しています</string>
     <string name="pref_hideicon_summary_off">通常の通知アイコンを使用しています</string>
+    <string name="pref_subscription_title">フィルター購読</string>
     <string name="pref_advanced_title">詳細設定</string>
     <string name="pref_proxy_title">プロクシ</string>
     <string name="pref_proxyhost_title">ホスト名</string>
@@ -76,4 +76,10 @@
     <string name="pref_checkupdate_title">アップデートチェック</string>
     <string name="pref_configuration_title">設定確認</string>
     <string name="menu_advanced">詳細設定</string>
+    
+    <string name="pref_subscription_unused_title">(使用しない)</string>
+    <string name="pref_subscription_one_title">フィルター購読１</string>
+    <string name="pref_subscription_two_title">フィルター購読２</string>
+    <string name="pref_subscription_three_title">フィルター購読３</string>
+    <string name="pref_subscription_four_title">フィルター購読４</string>
 </resources>

@@ -441,6 +441,27 @@ function clearSubscriptions()
     FilterStorage.removeSubscription(FilterStorage.subscriptions[0]);
 }
 
+function clearSubscriptionsExcept(urlTsv)
+{
+	var urls = urlTsv.split("\t");
+	var i = 0;
+	while (i < FilterStorage.subscriptions.length)
+	{
+		var subscription = FilterStorage.subscriptions[i];
+		var remove = true;
+		for(var k=0; k<urls.length;k++){
+			if(urls[k] == subscription.url){
+				remove = false;
+				break;
+			}
+		}
+		if(remove)
+			FilterStorage.removeSubscription(subscription);
+		else
+			i++;
+	}
+}
+
 /**
  * Adds selected subscription to storage.
  */
@@ -466,13 +487,23 @@ function addSubscription(jsonSub)
 /**
  * Forces subscriptions refresh.
  */
-function refreshSubscriptions()
+function refreshSubscriptionsAll()
 {
   for (var i = 0; i < FilterStorage.subscriptions.length; i++)
   {
     var subscription = FilterStorage.subscriptions[i];
     if (subscription instanceof DownloadableSubscription)
       Synchronizer.execute(subscription, true, true);
+  }
+}
+function refreshSubscriptions(url)
+{
+  for (var i = 0; i < FilterStorage.subscriptions.length; i++)
+  {
+    var subscription = FilterStorage.subscriptions[i];
+    if (subscription instanceof DownloadableSubscription)
+      if(subscription.url == url)//// test
+        Synchronizer.execute(subscription, true, true);
   }
 }
 
@@ -517,7 +548,7 @@ function updateSubscriptionStatus(subscription)
   else
     status = "synchronize_never";
 
-  Android.setStatus(status, time);
+  Android.setStatus(status + "\t" + subscription.url, time);
 }
 
 function onFilterChange(action, subscription, param1, param2)
