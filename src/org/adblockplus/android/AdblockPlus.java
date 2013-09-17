@@ -713,6 +713,8 @@ public class AdblockPlus extends Application
    */
   public void scheduleUpdater(int minutes)
   {
+	return;
+	/*
     Calendar updateTime = Calendar.getInstance();
 
     if (minutes == 0)
@@ -736,6 +738,7 @@ public class AdblockPlus extends Application
     // Set non-waking alarm
     AlarmManager alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
     alarms.set(AlarmManager.RTC, updateTime.getTimeInMillis(), recurringUpdate);
+    */
   }
 
   @Override
