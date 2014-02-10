@@ -1,6 +1,6 @@
 /*
- * This file is part of the Adblock Plus,
- * Copyright (C) 2006-2012 Eyeo GmbH
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -380,10 +380,6 @@ public class ProxyService extends Service implements OnSharedPreferenceChangeLis
     // Stop proxy server
     if (proxy != null)
       proxy.close();
-
-    // TODO Do we have to check current state?
-    // Stop engine if not in interactive mode
-    AdblockPlus.getApplication().stopEngine(false);
 
     // Release service lock
     stopForeground(true);
@@ -782,7 +778,6 @@ public class ProxyService extends Service implements OnSharedPreferenceChangeLis
       builder.setSmallIcon(R.drawable.ic_stat_warning);
       builder.setWhen(System.currentTimeMillis());
       builder.setAutoCancel(true);
-      builder.setDefaults(Notification.DEFAULT_SOUND);
       Intent intent = new Intent(ProxyService.this, ConfigurationActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       intent.putExtra("port", port);
       PendingIntent contentIntent = PendingIntent.getActivity(ProxyService.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

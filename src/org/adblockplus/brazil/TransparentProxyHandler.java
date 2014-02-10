@@ -1,6 +1,6 @@
 /*
- * This file is part of the Adblock Plus,
- * Copyright (C) 2006-2012 Eyeo GmbH
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -39,7 +39,7 @@ public class TransparentProxyHandler implements Handler
   @Override
   public boolean respond(Request request) throws IOException
   {
-    if (!request.url.startsWith("http://"))
+    if (!request.url.contains("://"))
     {
       request.url = "http://" + request.headers.get("host") + request.url;
     }

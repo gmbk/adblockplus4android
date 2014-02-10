@@ -4,11 +4,12 @@
     <string name="update_url">https://adblockplus.org/androidupdates.xml?api=%1$d&amp;build=%2$d&amp;locale=%3$s&amp;device=%4$s</string>
     <string name="devbuild_update_url">https://adblockplus.org/devbuilds/adblockplusandroid/updates.xml?api=%1$d&amp;build=%2$d&amp;locale=%3$s&amp;device=%4$s</string>
     <string name="crash_report_url">https://crashes.adblockplus.org/submitCrash?version=1</string>
-    <string name="pref_subscription">subscription</string>
+    
     <string name="pref_enabled">enabled</string>
     <string name="pref_proxyenabled">proxyenabled</string>
+    <string name="pref_acceptableads">acceptableads</string>
     <string name="pref_startatboot">startatboot</string>
-    
+    <string name="pref_subscription">subscription</string>
     <string name="pref_hideicon">hideicon</string>
     <string name="pref_refresh">refresh</string>
     <string name="pref_wifirefresh">wifirefresh</string>
@@ -25,12 +26,5 @@
     <string name="pref_version">versioncode</string>
     <string name="pref_proxyautoconfigured">proxy_autoconfigured</string>
     <string name="pref_lastport">lastport</string>
-
-    <string name="pref_preferencescreen">preferencescreen</string>
-    <string name="pref_subscription_unused">subscription_unused</string>
-    <string name="pref_subscription_one">subscription_one</string>
-    <string name="pref_subscription_two">subscription_two</string>
-    <string name="pref_subscription_three">subscription_three</string>
-    <string name="pref_subscription_four">subscription_four</string>
 
 </resources>

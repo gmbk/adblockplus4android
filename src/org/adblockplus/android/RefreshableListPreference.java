@@ -1,6 +1,6 @@
 /*
- * This file is part of the Adblock Plus,
- * Copyright (C) 2006-2012 Eyeo GmbH
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -32,8 +32,6 @@ import android.widget.LinearLayout;
 public class RefreshableListPreference extends ListPreference
 {
   private OnClickListener refreshClickListener;
-  
-  private OnClickListener preferenceClickListener;
 
   public RefreshableListPreference(Context context, AttributeSet attrs)
   {
@@ -72,18 +70,5 @@ public class RefreshableListPreference extends ListPreference
   public void setOnRefreshClickListener(OnClickListener l)
   {
     refreshClickListener = l;
-  }
-  
-  @Override
-  protected void onClick()
-  {
-	  if(preferenceClickListener != null)
-		  preferenceClickListener.onClick(null);
-	  super.onClick();
-  }
-  public void setOnClickListener(OnClickListener onClickListener)
-  {
-	  if(preferenceClickListener == null)
-			  preferenceClickListener = onClickListener;
   }
 }

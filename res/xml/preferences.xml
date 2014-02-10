@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:switchpref="http://schemas.android.com/apk/res-auto"
-android:key="@string/pref_preferencescreen">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:switchpref="http://schemas.android.com/apk/res-auto">
 
     <org.jraf.android.backport.switchwidget.SwitchPreference
         android:key="@string/pref_enabled"
@@ -9,20 +8,14 @@ android:key="@string/pref_preferencescreen">
         android:title="@string/pref_enabled_title" />
 
     <org.adblockplus.android.RefreshableListPreference
-        android:key="@string/pref_subscription_one"
-        android:title="@string/pref_subscription_one_title" />
+        android:key="@string/pref_subscription"
+        android:title="@string/pref_subscription_title" />
 
-    <org.adblockplus.android.RefreshableListPreference
-        android:key="@string/pref_subscription_two"
-        android:title="@string/pref_subscription_two_title" />
-
-    <org.adblockplus.android.RefreshableListPreference
-        android:key="@string/pref_subscription_three"
-        android:title="@string/pref_subscription_three_title" />
-
-    <org.adblockplus.android.RefreshableListPreference
-        android:key="@string/pref_subscription_four"
-        android:title="@string/pref_subscription_four_title" />
+    <org.adblockplus.android.HelpfulCheckBoxPreference
+        android:key="@string/pref_acceptableads"
+        android:summaryOff="@string/pref_acceptableads_summary_off"
+        android:summaryOn="@string/pref_acceptableads_summary_on"
+        android:title="@string/pref_acceptableads_title" />
 
     <CheckBoxPreference
         android:key="@string/pref_hideicon"

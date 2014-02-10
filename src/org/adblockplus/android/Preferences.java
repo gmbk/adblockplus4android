@@ -1,6 +1,6 @@
 /*
- * This file is part of the Adblock Plus,
- * Copyright (C) 2006-2012 Eyeo GmbH
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -20,11 +20,8 @@ package org.adblockplus.android;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.jraf.android.backport.switchwidget.SwitchPreference;
 
@@ -44,10 +41,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,13 +67,13 @@ public class Preferences extends SummarizedPreferences
   private static final int ABOUT_DIALOG = 1;
   private static final int HIDEICONWARNING_DIALOG = 2;
 
-  private static final int SUBSCRIPTION_LENGTH = 4;
-  
   private static ProxyService proxyService = null;
 
-  private RefreshableListPreference[] subscriptionLists;
+  private static boolean firstRunActionsPending = true;
 
-  private String[] subscriptionSummarys;
+  private RefreshableListPreference subscriptionList;
+
+  private String subscriptionSummary;
 
   @Override
   public void onCreate(Bundle savedInstanceState)
@@ -104,81 +104,6 @@ public class Preferences extends SummarizedPreferences
     {
       copyAssets();
     }
-    
-    initSubscriptionLists();
-  }
-  
-  private void initSubscriptionLists(){
-    // Initialize subscription list
-	subscriptionLists = new RefreshableListPreference[SUBSCRIPTION_LENGTH];
-    subscriptionLists[0] = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription_one));
-    subscriptionLists[1] = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription_two));
-    subscriptionLists[2] = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription_three));
-    subscriptionLists[3] = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription_four));
-    for(int i=0; i<subscriptionLists.length; i++){
-      subscriptionLists[i].setOnClickListener(new View.OnClickListener(){
-        public void onClick(View v){
-          AdblockPlus application = AdblockPlus.getApplication();
-          if(application.subscriptionsXmlModified()){
-             application.clearSubscriptionList();
-             setSubscriptionList();
-          }
-        }
-      });
-    }
-    
-    AdblockPlus application = AdblockPlus.getApplication();
-    if(application.subscriptionsXmlModified())
-        application.clearSubscriptionList();
-    setSubscriptionList();
-  }
-  
-  private void setSubscriptionList(){
-    AdblockPlus application = AdblockPlus.getApplication();
-    List<Subscription> subscriptions = application.getSubscriptions();
-    String[] entries = new String[subscriptions.size() + 1];
-    String[] entryValues = new String[subscriptions.size() + 1];
-
-    entries[0] = getString(R.string.pref_subscription_unused_title);
-    entryValues[0] = getString(R.string.pref_subscription_unused);
-    
-    int i = 1;
-    for (Subscription subscription : subscriptions)
-    {
-      entries[i] = subscription.title;
-      entryValues[i] = subscription.url;
-      i++;
-    }
-
-    for(i=0; i<subscriptionLists.length; i++){
-      subscriptionLists[i].setEntries(entries);
-      subscriptionLists[i].setEntryValues(entryValues);
-    }
-
-    ////////////// remove invisible subscriptions
-    String urlTsv = "";
-    boolean doClear = false;
-	  for(i=0; i<subscriptionLists.length; i++){
-		  String url = "" + subscriptionLists[i].getValue();
-		  if(url.startsWith("http")){
-			  if(Arrays.asList(entryValues).contains(url)){
-				  // Log.e("TEST", i+"OK!: " + url);
-				  if(urlTsv.equals("")) urlTsv = url;
-				  else urlTsv += "\t" + url;
-			  }
-			  else{
-				  // Log.e("TEST", i+"Nothing!: " + url);
-				  subscriptionLists[i].setValue(getString(R.string.pref_subscription_unused));
-				  doClear = true;
-			  }
-		  }
-	  }
-      if(doClear && !urlTsv.equals("")){
-    	 // Log.w("TEST", "entering clear.. ");
-        application.clearSubscriptionsExcept(urlTsv);
-      }
-    
-    
   }
 
   @Override
@@ -187,7 +112,26 @@ public class Preferences extends SummarizedPreferences
     super.onStart();
     AdblockPlus application = AdblockPlus.getApplication();
     application.startEngine();
-    application.startInteractive();
+
+    // Initialize subscription list
+    subscriptionList = (RefreshableListPreference) findPreference(getString(R.string.pref_subscription));
+    Subscription[] subscriptions = application.getRecommendedSubscriptions();
+    String[] entries = new String[subscriptions.length];
+    String[] entryValues = new String[subscriptions.length];
+    int i = 0;
+    for (Subscription subscription : subscriptions)
+    {
+      entries[i] = subscription.title;
+      entryValues[i] = subscription.url;
+      i++;
+    }
+    subscriptionList.setEntries(entries);
+    subscriptionList.setEntryValues(entryValues);
+
+    // Set Acceptable Ads FAQ link
+    HelpfulCheckBoxPreference acceptableAdsCheckBox =
+        (HelpfulCheckBoxPreference) findPreference(getString(R.string.pref_acceptableads));
+    acceptableAdsCheckBox.setHelpUrl(AdblockPlus.getApplication().getAcceptableAdsUrl());
   }
 
   @Override
@@ -198,107 +142,88 @@ public class Preferences extends SummarizedPreferences
 
     final AdblockPlus application = AdblockPlus.getApplication();
 
-    boolean firstRun = false;
-
-    // Get current subscription
-    String[] currents = {
-        prefs.getString(getString(R.string.pref_subscription_one), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_two), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_three), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_four), (String) null),
-    };
-
-    if(subscriptionLists==null)
-    	initSubscriptionLists();
-    else
-    	for(int i=0; i<subscriptionLists.length; i++)
-    		if(subscriptionLists[i]==null){
-    			initSubscriptionLists();
-    			break;
-    		}
-    
-    if(subscriptionSummarys==null)
-    	subscriptionSummarys = new String[SUBSCRIPTION_LENGTH];
-    
-    boolean noCurrent = true;
-    for(int i=0; i<currents.length; i++){
-    	if(currents[i] != null){
-    		noCurrent = false;
-    		break;
-    	}
-    }
-    // If there is no current subscription autoselect one
-    if (noCurrent)
+    Subscription current = null;
+    Subscription[] subscriptions = application.getListedSubscriptions();
+    if (subscriptions.length > 0)
     {
-      firstRun = true;
-      Subscription offer = application.offerSubscription();
-      currents[0] = offer.url;
-      if (offer != null)
-      {
-        subscriptionLists[0].setValue(offer.url);
-        application.setSubscription(offer);
-        new AlertDialog.Builder(this).setTitle(R.string.app_name).setMessage(String.format(getString(R.string.msg_subscription_offer, offer.title))).setIcon(android.R.drawable.ic_dialog_info)
-            .setPositiveButton(R.string.ok, null).create().show();
-      }
+      current = subscriptions[0];
+    }
+
+    boolean firstRun = firstRunActionsPending && application.isFirstRun();
+    firstRunActionsPending = false;
+
+    if (firstRun && current != null)
+    {
+      showNotificationDialog(getString(R.string.install_name),
+          String.format(getString(R.string.msg_subscription_offer, current.title)),
+          application.getAcceptableAdsUrl());
+      application.setNotifiedAboutAcceptableAds(true);
+      setAcceptableAdsEnabled(true);
+    }
+    else if (!application.isNotifiedAboutAcceptableAds())
+    {
+      showNotificationDialog(getString(R.string.acceptableads_name),
+          getString(R.string.msg_acceptable_ads), application.getAcceptableAdsUrl());
+      application.setNotifiedAboutAcceptableAds(true);
+      setAcceptableAdsEnabled(true);
     }
 
     // Enable manual subscription refresh
-    for(int i=0; i<subscriptionLists.length;i++){
-      final int _i = i;
-      subscriptionLists[i].setOnRefreshClickListener(new View.OnClickListener()
-      {
-        @Override
-        public void onClick(View v)
-        {
-        	String url = subscriptionLists[_i].getValue();
-        	// Log.w("TEST", "refresh click listener: " +url);
-          application.refreshSubscription(url);
-        }
-      });
-    }
-      
-    // Set subscription status message
-    for(int i=0; i<subscriptionSummarys.length; i++)
+    subscriptionList.setOnRefreshClickListener(new View.OnClickListener()
     {
-      if (subscriptionSummarys[i] != null)
-        subscriptionLists[i].setSummary(subscriptionSummarys[i]);
-      else
-        setPrefSummary(subscriptionLists[i]);
-    }
+      @Override
+      public void onClick(View v)
+      {
+        application.refreshSubscriptions();
+      }
+    });
+
+    // Set subscription status message
+    if (subscriptionSummary != null)
+      subscriptionList.setSummary(subscriptionSummary);
+    else
+      setPrefSummary(subscriptionList);
 
     // Time to start listening for events
     registerReceiver(receiver, new IntentFilter(AdblockPlus.BROADCAST_SUBSCRIPTION_STATUS));
     registerReceiver(receiver, new IntentFilter(ProxyService.BROADCAST_STATE_CHANGED));
     registerReceiver(receiver, new IntentFilter(ProxyService.BROADCAST_PROXY_FAILED));
 
-    final String[] urls = currents;
-
-    // Initialize subscription verification
-    (new Thread()
-    {
-      @Override
-      public void run()
-      {
-        if (!application.verifySubscriptions())
-        {
-          for(int i=0; i<urls.length; i++){
-            Subscription subscription = application.getSubscription(urls[i]);
-            application.setSubscription(subscription);
-          }
-        }
-      }
-    }).start();
-
     // Update service and UI state according to user settings
+    if (current != null)
+    {
+      subscriptionList.setValue(current.url);
+      application.actualizeSubscriptionStatus(current.url);
+    }
     boolean enabled = prefs.getBoolean(getString(R.string.pref_enabled), false);
     boolean proxyenabled = prefs.getBoolean(getString(R.string.pref_proxyenabled), true);
     boolean autoconfigured = prefs.getBoolean(getString(R.string.pref_proxyautoconfigured), false);
+
+    // This is weird but UI does not update on back button (when returning from advanced preferences)
+    ((SwitchPreference) findPreference(getString(R.string.pref_enabled))).setChecked(enabled);
+
     if (enabled || firstRun)
       setFilteringEnabled(true);
     if (enabled || firstRun || (proxyenabled && !autoconfigured))
       setProxyEnabled(true);
 
     bindService(new Intent(this, ProxyService.class), proxyServiceConnection, 0);
+  }
+
+  private void showNotificationDialog(String title, String message, String url)
+  {
+    url = TextUtils.htmlEncode(url);
+    message = TextUtils.htmlEncode(message)
+        .replaceAll("&lt;a&gt;(.*?)&lt;/a&gt;", "<a href=\"" + url + "\">$1</a>");
+    final TextView messageView = new TextView(this);
+    messageView.setText(Html.fromHtml(message));
+    messageView.setMovementMethod(LinkMovementMethod.getInstance());
+    final int padding = 10;
+    messageView.setPadding(padding, padding, padding, padding);
+    new AlertDialog.Builder(this).setTitle(title)
+        .setView(messageView)
+        .setIcon(android.R.drawable.ic_dialog_info)
+        .setPositiveButton(R.string.ok, null).create().show();
   }
 
   @Override
@@ -325,9 +250,8 @@ public class Preferences extends SummarizedPreferences
   {
     super.onStop();
     AdblockPlus application = AdblockPlus.getApplication();
-    application.stopInteractive();
     if (!application.isFilteringEnabled())
-      application.stopEngine(true);
+      application.stopEngine();
   }
 
   @Override
@@ -357,6 +281,15 @@ public class Preferences extends SummarizedPreferences
       default:
         return super.onOptionsItemSelected(item);
     }
+  }
+
+  private void setAcceptableAdsEnabled(boolean enabled)
+  {
+    CheckBoxPreference acceptableAdsPreference =
+        (CheckBoxPreference) findPreference(getString(R.string.pref_acceptableads));
+    acceptableAdsPreference.setChecked(enabled);
+    AdblockPlus application = AdblockPlus.getApplication();
+    application.setAcceptableAdsEnabled(enabled);
   }
 
   private void setFilteringEnabled(boolean enabled)
@@ -487,43 +420,16 @@ public class Preferences extends SummarizedPreferences
         stopService(new Intent(this, ProxyService.class));
       }
     }
-    else if ( getString(R.string.pref_subscription_one).equals(key)
-    		||getString(R.string.pref_subscription_two).equals(key)
-    		||getString(R.string.pref_subscription_three).equals(key)
-    		||getString(R.string.pref_subscription_four).equals(key)
-    		)
+    else if (getString(R.string.pref_acceptableads).equals(key))
     {
-      String current = "" + sharedPreferences.getString(key, null);
-
-	  int cnt = 0;
-	  String urlTsv = "";
-	  for(int i=0; i<subscriptionLists.length; i++){
-		  String url = "" + subscriptionLists[i].getValue();
-		 // if(url.equals("")) continue;
-		  if(url.startsWith("http")){
-			  if(url.equals(current)) cnt++;
-			  if(cnt > 1) {
-				  subscriptionLists[i].setValue(getString(R.string.pref_subscription_unused));
-			  }
-			  else {
-				  if(urlTsv.equals("")) urlTsv = url;
-				  else urlTsv += "\t" + url;
-			  }
-		  }
-	  }
-
-      application.clearSubscriptionsExcept(urlTsv);
-      
-      if(current.equals(getString(R.string.pref_subscription_unused))){
-    	  // delete this preference.
-    	  // Log.w("TEST", "set to unused");
-      }
-      else{
-    	  if(cnt == 1){
-	        Subscription subscription = application.getSubscription(current);
-	        application.setSubscription(subscription);
-    	  }
-      }
+      boolean enabled = sharedPreferences.getBoolean(key, false);
+      application.setAcceptableAdsEnabled(enabled);
+    }
+    else if (getString(R.string.pref_subscription).equals(key))
+    {
+      String url = sharedPreferences.getString(key, null);
+      if (url != null)
+        application.setSubscription(url);
     }
     else if (getString(R.string.pref_hideicon).equals(key))
     {
@@ -585,14 +491,14 @@ public class Preferences extends SummarizedPreferences
       }
       if (action.equals(AdblockPlus.BROADCAST_SUBSCRIPTION_STATUS))
       {
-        final String text = extra.getString("text");
+        //TODO Should check if url matches active subscription
+        final String text = extra.getString("status");
         final long time = extra.getLong("time");
-        final String url = extra.getString("url");
         runOnUiThread(new Runnable()
         {
           public void run()
           {
-            setSubscriptionStatus(text, time, url);
+            setSubscriptionStatus(text, time);
           }
         });
       }
@@ -607,30 +513,10 @@ public class Preferences extends SummarizedPreferences
    * @param time
    *          time of last change
    */
-  private void setSubscriptionStatus(String text, long time, String url)
+  private void setSubscriptionStatus(String text, long time)
   {
-    //ListPreference subscriptionList = (ListPreference) findPreference(getString(R.string.pref_subscription));
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    // Get current subscription
-    String[] currents = {
-        prefs.getString(getString(R.string.pref_subscription_one), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_two), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_three), (String) null),
-        prefs.getString(getString(R.string.pref_subscription_four), (String) null),
-    };
-
-    int i;
-    for(i=0; i<currents.length; i++){
-      if(currents[i]!= null && currents[i].equals(url)){
-        break;
-      }
-    }
-    if(i >= subscriptionLists.length){
-    	// Log.w("TEST", "no subscription list for " + url);
-    	return;
-    }
-    CharSequence summary = subscriptionLists[i].getEntry();
+    ListPreference subscriptionList = (ListPreference) findPreference(getString(R.string.pref_subscription));
+    CharSequence summary = subscriptionList.getEntry();
     StringBuilder builder = new StringBuilder();
     if (summary != null)
     {
@@ -655,10 +541,8 @@ public class Preferences extends SummarizedPreferences
         }
         builder.append(")");
       }
-      subscriptionSummarys[i] = builder.toString();
-      
-      // Log.w("TEST", subscriptionSummarys[i]);
-      subscriptionLists[i].setSummary(subscriptionSummarys[i]);
+      subscriptionSummary = builder.toString();
+      subscriptionList.setSummary(subscriptionSummary);
     }
   }
 
@@ -666,22 +550,13 @@ public class Preferences extends SummarizedPreferences
   protected void onRestoreInstanceState(Bundle state)
   {
     super.onRestoreInstanceState(state);
-    if(subscriptionSummarys == null){
-    	subscriptionSummarys = new String[SUBSCRIPTION_LENGTH];
-    }
-    subscriptionSummarys[0] = state.getString("subscriptionSummary_zero");
-    subscriptionSummarys[1] = state.getString("subscriptionSummary_one");
-    subscriptionSummarys[2] = state.getString("subscriptionSummary_two");
-    subscriptionSummarys[3] = state.getString("subscriptionSummary_three");
+    subscriptionSummary = state.getString("subscriptionSummary");
   }
 
   @Override
   protected void onSaveInstanceState(Bundle outState)
   {
-    outState.putString("subscriptionSummary_zero",  subscriptionSummarys[0]);
-    outState.putString("subscriptionSummary_one",   subscriptionSummarys[1]);
-    outState.putString("subscriptionSummary_two",   subscriptionSummarys[2]);
-    outState.putString("subscriptionSummary_three", subscriptionSummarys[3]);
+    outState.putString("subscriptionSummary", subscriptionSummary);
     super.onSaveInstanceState(outState);
   }
 
